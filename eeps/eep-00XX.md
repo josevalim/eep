@@ -31,9 +31,9 @@ apply(Mod, Fun, [SomeValue | Args]).
 
 One of the main reasons MFArgs exist is because anonymous functions
 which close over an existing environment can only be serialized across
-nodes nor be persisted to disk if they preserve the same module version.
+nodes or be persisted to disk if they preserve the same module version.
 Therefore, when dealing with distribution, disk persistence, or hot code
-upgrades, it is essential to use MFArgs instead. Similarly, configuration
+upgrades, it is essential to use MFArgs instead. Additionally, configuration
 files do not support anonymous functions, and MFArgs are the main option.
 
 Due to those limitations, many functions in Erlang/OTP and also in
@@ -132,7 +132,9 @@ fun some_mod:some_fun(...Args)
 Where `Args` can be zero, one, or many arguments. Arguments can
 be any expression or the `_` variable. The `_` variable denotes
 placeholders, which are arguments that have not yet been provided
-(the use of `_` is a proposal, the exact notation can be changed).
+(the use of `_` is a proposal, the exact notation can be changed,
+see below for additional syntax considerations).
+
 A partially applied function may have zero or more placeholders.
 The number of placeholders dictate the arity of the function and
 they are provided in order. For example, this is a two arity
@@ -167,7 +169,7 @@ spawn(begin
 end).
 ```
 
-This is important because the role of this feature goes beyond syntactic
+This is important because the role of this feature extends beyond syntactic
 sugar: it allows Erlang developers to glance at the code and, as long
 as it uses `fun some_mod:some_fun/Arity` or `fun some_mod:some_fun(...Args)`,
 they know they can be persisted. This information could also be used by
@@ -194,8 +196,8 @@ fun GetUsername(SomeMap).
 The code above returns a zero-arity function that returns the
 `username` of `SomeMap` when applied.
 
-However, note that `fun SomeFun/0` is not valid today, and
-such syntax will remain invalid.
+> `fun SomeFun/SomeArity` is not valid today, and such syntax
+> will remain invalid as it is orthogonal to this proposal.
 
 Visual cluttering
 -----------------
@@ -231,19 +233,19 @@ considered:
   hence `fun foo(X)` has to be written as: `fun foo(X)/0`.
   `fun maps:get(username, _)` as `fun maps:get(username, _)/1`.
   If the version with arity is preferred, then the `fun` prefix could
-  also be dropped, if desired, as there is no ambiguity;
+  also be dropped, if desired, as there is no ambiguity (but it may
+  be preserved for clarity)
 
 Alternative Solutions
 =====================
 
 The solution above chose to extend the existing `fun` syntax and use
-`_` as a placeholder. The exact details can be changed accordingly.
+`_` as a placeholder. The exact placeholder syntax can be modified.
 
 Note this EEP focuses on language changes, rather than runtime changes,
-because whatever solution is chosen must support configuration files,
-which are limited in terms of code execution. This means an API that
-worked exclusively at runtime would not tackle all of the use cases
-handled by MFArgs.
+because support within configuration files is a key goal of this proposal.
+This means an API that worked exclusively at runtime would not tackle all
+of the use cases handled by the existing MFArgs.
 
 With that in mind, we discuss some alternatives below.
 
